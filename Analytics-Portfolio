@@ -1,0 +1,89 @@
+--Dataset: Museums
+--Source: Kaggle https://www.kaggle.com/datasets/imls/museum-directory / https://www.kaggle.com/datasets/lucasvictor/us-state-populations-2018
+--Queried using: Snowflake
+
+SELECT * FROM MUSEUMS
+
+CREATE TABLE MUSEUMS (
+	MUSEUM_ID NUMBER(38,0) NOT NULL,
+	MUSEUM_NAME VARCHAR(16777216),
+	LEGAL_NAME VARCHAR(16777216),
+	ALTERNATE_NAME VARCHAR(16777216),
+	MUSEUM_TYPE VARCHAR(16777216),
+	INSTITUTION_NAME VARCHAR(16777216),
+	ADMIN_STREET_ADDRESS VARCHAR(16777216),
+	ADMIN_CITY VARCHAR(16777216),
+	ADMIN_STATE VARCHAR(16777216),
+	ADMIN_ZIP_CODE NUMBER(38,0),
+	PHYSICAL_STREET_ADDRESS VARCHAR(16777216),
+	PHYSICAL_CITY VARCHAR(16777216),
+	PHYSICAL_STATE VARCHAR(16777216),
+	PHYSICAL_ZIP_CODE NUMBER(38,0),
+	PHONE_NUMBER NUMBER(38,0),
+	LATITUDE FLOAT,
+	LONGITUDE FLOAT,
+	LOCALE_CODE NUMBER(38,0),
+	COUNTRY_CODE NUMBER(38,0),
+	STATE_CODE NUMBER(38,0),
+	REGION_CODE NUMBER(38,0),
+	EMPLOYER_ID NUMBER(38,0),
+	TAX_PERIOD NUMBER(38,0),
+	INCOME NUMBER(38,0),
+	REVENUE NUMBER(38,0)
+);
+
+SELECT * FROM COMMENTS
+
+CREATE TABLE COMMENTS (
+	INDEX NUMBER(38,0),
+	VIDEO_ID VARCHAR(16777216) NOT NULL,
+	COMMENT VARCHAR(16777216),
+	LIKES NUMBER(38,0),
+	SENTIMENT NUMBER(38,0)
+);
+
+Which state has the museums with the highest average revenue? 
+
+SELECT DISTINCT
+    admin_state,
+    AVG(revenue) AS avg_revenue
+FROM museums
+WHERE revenue IS NOT NULL
+GROUP BY admin_state
+ORDER BY AVG(revenue) DESC
+
+
+Which state has the museums with the highest expenses?
+
+SELECT DISTINCT
+    admin_state,
+    MAX(revenue) AS highest_expenses
+FROM museums
+WHERE revenue IS NOT NULL
+GROUP BY admin_state
+ORDER BY MAX(revenue) DESC
+
+How many museums belong to universities?
+
+SELECT 
+    COUNT(museum_id) AS museum_count
+FROM museums
+WHERE institution_name IS NOT NULL
+
+Which regions possess the most museums per capita?
+
+SELECT DISTINCT
+    CASE 
+        WHEN state IN ('CT', 'ME', 'MA', 'NH', 'RI', 'VT', 'NJ', 'NY', 'PA') THEN 'Northeast'
+        WHEN state IN ('Il', 'IN', 'MI', 'OH', 'WI', 'IA', 'KS', 'MN', 'MO', 'NE', 'ND', 'SD') THEN 'Midwest'
+        WHEN state IN ('DE', 'FL', 'GA', 'MD', 'NC', 'SC', 'VA', 'DC', 'WV', 'AL', 'KY', 'MS', 'TN', 'AR', 'LA', 'Ok', 'TX') THEN 'South'
+        WHEN state IN ('AZ', 'CO', 'ID', 'MT', 'NV', 'NM', 'UT', 'WY', 'AK', 'CA', 'HI', 'OR', 'WA') THEN 'West'
+        ELSE 'Other'
+        END AS Region,
+        population_2018,
+        COUNT(m.museum_id) AS museum_count
+FROM us_state_population_2018 AS us
+INNER JOIN museums AS m 
+ON us.state = m.admin_state
+GROUP BY region, population_2018
+ORDER BY COUNT(m.museum_id) DESC
