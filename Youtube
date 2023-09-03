@@ -1,0 +1,61 @@
+--Dataset: Youtube
+--Source: https://www.kaggle.com/datasets/advaypatil/youtube-statistics?select=comments.csv / https://www.kaggle.com/datasets/advaypatil/youtube-statistics?select=videos-stats.csv
+--Queried Using: Snowflake
+
+SELECT * FROM VIDEO_STATS
+
+CREATE VIDEOS_STATS (
+	INDEX NUMBER(38,0),
+	TITLE VARCHAR(16777216),
+	VIDEO_ID VARCHAR(16777216) NOT NULL,
+	PUBLISHED_AT DATE,
+	KEYWORD VARCHAR(16777216),
+	LIKES NUMBER(38,0),
+	COMMENTS NUMBER(38,0),
+	VIEWS NUMBER(38,0)
+);
+
+SELECT * FROM COMMENTS
+
+CREATE TABLE COMMENTS (
+	INDEX NUMBER(38,0),
+	VIDEO_ID VARCHAR(16777216) NOT NULL,
+	COMMENT VARCHAR(16777216),
+	LIKES NUMBER(38,0),
+	SENTIMENT NUMBER(38,0)
+);
+
+What are the most commented-upon videos?
+
+SELECT 
+    title,
+    comments
+FROM videos_stats
+WHERE comments IS NOT NULL
+ORDER BY comments DESC
+
+What are the most liked videos?
+
+SELECT
+    title,
+    likes
+FROM videos_stats
+WHERE likes IS NOT NULL
+ORDER BY likes DESC
+
+How many total views does each category have?
+
+SELECT 
+    keyword AS category,
+    SUM(views) AS total_views
+FROM videos_stats
+GROUP BY keyword
+
+How many likes does each category have?
+
+SELECT 
+    keyword AS category,
+    SUM(likes) AS total_likes
+FROM videos_stats
+GROUP BY keyword
+
