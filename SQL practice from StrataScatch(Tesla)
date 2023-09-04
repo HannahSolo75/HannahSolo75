@@ -1,0 +1,25 @@
+Title: New Products
+Level of Difficulty: Medium
+Company: Tesla
+Table: car_launches
+
+You are given a table of product launches by company by year. 
+Write a query to count the net difference between the number of products companies launched in 2020 with the number of products companies launched in the previous year. 
+Output the name of the companies and a net difference of net products released for 2020 compared to the previous year.
+
+WITH products AS (
+SELECT
+    year,
+    company_name,
+    COUNT(DISTINCT product_name) AS total_products,
+    LAG(COUNT(DISTINCT product_name)) OVER (PARTITION BY company_name ORDER BY year) AS previous_year_products
+FROM car_launches
+GROUP BY year, company_name
+ORDER BY year, company_name
+)
+
+SELECT 
+    company_name,
+    total_products - previous_year_products AS net_difference
+FROM products
+OFFSET 5
