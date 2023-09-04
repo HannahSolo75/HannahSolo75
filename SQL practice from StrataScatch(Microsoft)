@@ -1,0 +1,48 @@
+Title: Premium vs Freemium
+Level of Difficulty: Hard
+Company: Microsoft
+Tables: ms_user_dimension, ms_acc_dimension, ms_download_facts
+
+Find the total number of downloads for paying and non-paying users by date. 
+Include only records where non-paying customers have more downloads than paying customers. 
+The output should be sorted by earliest date first and contain 3 columns date, non-paying downloads, paying downloads.
+
+WITH non_paying AS (
+SELECT
+    d.date AS date,
+   -- u.user_id AS user_id,
+    acc.paying_customer AS paying_customer,
+    SUM(d.downloads) AS downloads
+FROM ms_user_dimension AS u
+INNER JOIN ms_acc_dimension AS acc
+ON u.acc_id = acc.acc_id
+INNER JOIN ms_download_facts AS d
+ON u.user_id = d.user_id
+WHERE acc.paying_customer = 'no'
+GROUP BY d.date, acc.paying_customer
+),
+
+paying AS (
+SELECT
+    d.date AS date,
+   -- u.user_id AS user_id,
+    acc.paying_customer AS paying_customer,
+    SUM(d.downloads) AS downloads
+FROM ms_user_dimension AS u
+INNER JOIN ms_acc_dimension AS acc
+ON u.acc_id = acc.acc_id
+INNER JOIN ms_download_facts AS d
+ON u.user_id = d.user_id
+WHERE acc.paying_customer = 'yes'
+GROUP BY d.date, acc.paying_customer
+)
+
+SELECT 
+    n.date AS date,
+    n.downloads AS non_paying_downloads,
+    p.downloads AS paying_downloads
+FROM non_paying AS n
+INNER JOIN paying AS p
+ON n.date = p.date
+WHERE n.downloads > p.downloads
+ORDER BY n.date 
