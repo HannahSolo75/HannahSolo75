@@ -1,0 +1,21 @@
+Title: Finding User Purchases
+Level of Difficulty: Medium
+Company: Amazon
+Table: amazon_transactions
+
+Write a query that'll identify returning active users.
+A returning active user is a user that has made a second purchase within 7 days of any other of their purchases. 
+Output a list of user_ids of these returning active users.
+
+WITH time_between_purchases AS (
+SELECT 
+    user_id,
+    created_at - lag(created_at, 1) OVER (partition by user_id ORDER BY created_at) AS time_from_last_purchase
+FROM amazon_transactions
+ORDER BY user_id, created_at 
+)
+SELECT DISTINCT
+    user_id
+FROM time_between_purchases
+WHERE time_from_last_purchase <= 7
+ORDER BY user_id
