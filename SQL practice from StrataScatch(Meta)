@@ -1,0 +1,33 @@
+Title: Users By Average Session Time
+Level of Difficulty: Medium
+Company: Meta/Facebook
+Table: facebook_web_log
+
+Calculate each user's average session time. A session is defined as the time difference between a page_load and page_exit. 
+For simplicity, assume a user has only 1 session per day and if there are multiple of the same events on that day, consider only the latest page_load and earliest page_exit, 
+with an obvious restriction that load time event should happen before exit time event . 
+Output the user_id and their average session time.
+
+WITH page_load AS (
+SELECT
+    user_id,
+    timestamp
+FROM facebook_web_log
+WHERE action = 'page_load'
+),
+
+page_exit AS (
+SELECT
+    user_id,
+    timestamp
+FROM facebook_web_log
+WHERE action = 'page_exit')
+
+
+SELECT 
+    pl.user_id AS user_id,
+    AVG(pe.timestamp - pl.timestamp) AS avg_session
+FROM page_load AS pl
+INNER JOIN page_exit AS pe
+ON pl.user_id = pe.user_id
+GROUP BY pl.user_id
